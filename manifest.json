@@ -8,10 +8,13 @@
         "scripting"
     ],
     "host_permissions": [
-        "https://docs.google.com/forms/*"
+        "https://docs.google.com/forms/*",
+        "https://generativelanguage.googleapis.com/*",
+        "<all_urls>"
     ],
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background.js",
+        "type": "module"
     },
     "content_scripts": [
         {
