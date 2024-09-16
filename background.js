@@ -117,6 +117,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 action: "highlightAnswer",
                 questionIndex: i,
                 correctAnswerIndex,
+                questionText: questionText,
               });
             }
           }
