@@ -1,4 +1,5 @@
-const GEMINI_API_KEY = "AIzaSyBcs7c6XujOJDhEedR5JjZgAGSxG9swBqg";
+// TODO: Add your API key here
+const GEMINI_API_KEY = "API_KEY";
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
 
