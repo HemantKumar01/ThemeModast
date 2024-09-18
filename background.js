@@ -1,5 +1,5 @@
-// TODO: Add your API key here
-const GEMINI_API_KEY = "API_KEY";
+import GEMINI_API_KEY from "./apis.js";
+
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
 
