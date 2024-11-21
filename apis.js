@@ -1,2 +1,3 @@
-const GEMINI_API_KEY = "AIzaSyA8C6jupZWM8xnIfZ5Q3TiTrrAaFO3V4ic";
-export default GEMINI_API_KEY;
+const GEMINI_API_KEY =
+  "U2FsdGVkX1940DbYEEq/nJp5fzxrbGKutcOoERaAI0Jjf0bZ7ENIyp/Z85XWgGuTxVYprMC6npJ6b7tEnPTopQ==";
+// export default GEMINI_API_KEY;

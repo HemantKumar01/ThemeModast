@@ -1,5 +1,12 @@
-import GEMINI_API_KEY from "./apis.js";
-
+// import GEMINI_API_KEY from "./apis.js";
+importScripts("crypto-js.min.js");
+importScripts("apis.js");
+// const encrypted_api_key = CryptoJS.AES.encrypt(
+//   "",
+//   ""
+// ).toString();
+// console.log("COPY:", encrypted_api_key);
+let final_API_KEY = "";
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
 
@@ -61,7 +68,8 @@ async function queryGeminiAPI(question, options, questionImages) {
   }
 
   console.log("Final Prompt:", [{ text: prompt }, ...imageParts]);
-  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+
+  const response = await fetch(`${GEMINI_API_URL}?key=${final_API_KEY}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -92,8 +100,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         { action: "getQuestions" },
         async (response) => {
           console.log("Get Question:", response);
-          const { questionData } = response;
-
+          const { questionData, pswd } = response;
+          final_API_KEY = CryptoJS.AES.decrypt(GEMINI_API_KEY, pswd).toString(
+            CryptoJS.enc.Utf8
+          );
           for (let i = 0; i < questionData.length; i++) {
             const {
               questionText,

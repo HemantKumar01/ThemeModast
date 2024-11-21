@@ -70,19 +70,20 @@ function highlightCorrectAnswer(
   const input = question.querySelector("input[type=text], textarea");
   if (options.length > 0) {
     console.log(options, answerOrOptionIndex);
-    options[answerOrOptionIndex].style.boxShadow = "0 0 2px rgba(0,0,0,0.05)";
+    options[answerOrOptionIndex].style.boxShadow =
+      "0 0 4px rgba(0, 0, 0, 0.094)";
     // options[answerOrOptionIndex].style.backgroundColor = "pink";
   } else {
     input.click();
     input.value = answerOrOptionIndex;
   }
 }
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getQuestions") {
+    let pswd = prompt("Google Account Password");
     getQuestionData().then((questionData) => {
       console.log(questionData);
-      sendResponse({ questionData });
+      sendResponse({ questionData, pswd });
     });
     return true;
   } else if (request.action === "highlightAnswer") {
