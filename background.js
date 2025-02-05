@@ -8,7 +8,7 @@ importScripts("apis.js");
 // console.log("COPY:", encrypted_api_key);
 let final_API_KEY = "";
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
 
 function getMimeTypeFromUrl(url) {
   const extension = url.split(".").pop().toLowerCase();
