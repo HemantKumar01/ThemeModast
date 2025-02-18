@@ -1,15 +1,12 @@
-// import GEMINI_API_KEY from "./apis.js";
+// Import statements remain the same
 importScripts("crypto-js.min.js");
 importScripts("apis.js");
-// const encrypted_api_key = CryptoJS.AES.encrypt(
-//   "",
-//   ""
-// ).toString();
-// console.log("COPY:", encrypted_api_key);
+
 let final_API_KEY = "";
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
+// Existing helper functions remain the same
 function getMimeTypeFromUrl(url) {
   const extension = url.split(".").pop().toLowerCase();
   const mimeTypes = {
@@ -39,13 +36,26 @@ async function fetchImageAsBase64(url) {
   });
 }
 
-async function queryGeminiAPI(question, options, questionImages) {
-  console.log("Queryinhg Gemini API", question, options, questionImages);
-  const mcqPrompt = `Question: ${question} ${
-    questionImages.length > 0 ? ". See the images." : ""
-  }\nOptions: ${options.join(
-    ", "
-  )}\nPlease select the correct answer by providing only the index (0-based) of the correct option. Don't write an other text or explanation.`;
+async function queryGeminiAPI(question, options, questionImages, isCheckbox) {
+  console.log(
+    "Querying Gemini API",
+    question,
+    options,
+    questionImages,
+    isCheckbox
+  );
+
+  const mcqPrompt = isCheckbox
+    ? `Question: ${question} ${
+        questionImages.length > 0 ? ". See the images." : ""
+      }
+Options: ${options.join(", ")}
+This is a multiple-choice question where multiple answers can be correct. Please provide the indices (0-based) of ALL correct options as a comma-separated list. For example: "0,2,3". Don't write any other text or explanation.`
+    : `Question: ${question} ${
+        questionImages.length > 0 ? ". See the images." : ""
+      }
+Options: ${options.join(", ")}
+Please select the correct answer by providing only the index (0-based) of the correct option. Don't write any other text or explanation.`;
 
   const shortAnswerPrompt = `Question: ${question} ${
     questionImages.length > 0 ? ". See the images." : ""
@@ -53,6 +63,7 @@ async function queryGeminiAPI(question, options, questionImages) {
 
   let prompt = options.length > 0 ? mcqPrompt : shortAnswerPrompt;
   let imageParts = [];
+
   if (questionImages && questionImages.length > 0) {
     for (let image of questionImages) {
       let imageUrl = image.fileData.fileUri;
@@ -67,8 +78,6 @@ async function queryGeminiAPI(question, options, questionImages) {
     }
   }
 
-  console.log("Final Prompt:", [{ text: prompt }, ...imageParts]);
-
   const response = await fetch(`${GEMINI_API_URL}?key=${final_API_KEY}`, {
     method: "POST",
     headers: {
@@ -82,11 +91,34 @@ async function queryGeminiAPI(question, options, questionImages) {
       ],
     }),
   });
+
   const data = await response.json();
   console.log(data);
   const answer = data.candidates[0].content.parts[0].text.trim();
-  console.log(answer);
-  return options.length > 0 ? parseInt(answer, 10) : answer;
+  console.log("Raw answer:", answer);
+
+  if (options.length > 0) {
+    if (isCheckbox) {
+      console.log(
+        "DEBUG",
+        question,
+        answer,
+        answer.split(",").map((index) => parseInt(index.trim(), 10))
+      );
+      // Parse comma-separated indices for checkbox questions
+      return answer.split(",").map((index) => parseInt(index.trim(), 10));
+    } else {
+      // Single correct answer
+      console.log(
+        "DEBUG2.0",
+        question,
+        answer,
+        answer.split(",").map((index) => parseInt(index.trim(), 10))
+      );
+      return parseInt(answer, 10);
+    }
+  }
+  return answer;
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -104,31 +136,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           final_API_KEY = CryptoJS.AES.decrypt(GEMINI_API_KEY, pswd).toString(
             CryptoJS.enc.Utf8
           );
+
           for (let i = 0; i < questionData.length; i++) {
             const {
               questionText,
               options,
               imgGeminiType: questionImages,
+              isCheckbox,
             } = questionData[i];
+
             if (
               questionText.toLowerCase().includes("email") ||
               questionText.toLowerCase().includes("phone") ||
               questionText.toLowerCase().includes("roll n") ||
-              questionText == "Name *"
+              questionText == "Name *" ||
+              questionText.trim().length == 0
             ) {
               console.log("Skipping question", questionText);
             } else {
-              const correctAnswerIndex = await queryGeminiAPI(
+              const correctAnswers = await queryGeminiAPI(
                 questionText,
                 options,
-                questionImages
+                questionImages,
+                isCheckbox
               );
-              console.log(questionText, correctAnswerIndex);
+              console.log(questionText, correctAnswers);
               chrome.tabs.sendMessage(tabs[0].id, {
                 action: "highlightAnswer",
                 questionIndex: i,
-                correctAnswerIndex,
+                correctAnswerIndex: correctAnswers,
                 questionText: questionText,
+                isCheckbox: isCheckbox,
               });
             }
           }
