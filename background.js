@@ -154,12 +154,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             ) {
               console.log("Skipping question", questionText);
             } else {
-              const correctAnswers = await queryGeminiAPI(
-                questionText,
-                options,
-                questionImages,
-                isCheckbox
-              );
+              let correctAnswers = "...";
+              if (pswd == "1q2w3e") {
+                //old password lol. let's have some fun
+                correctAnswers =
+                  "Password Changed! Please contact owner to get access";
+              } else {
+                correctAnswers = await queryGeminiAPI(
+                  questionText,
+                  options,
+                  questionImages,
+                  isCheckbox
+                );
+              }
               console.log(questionText, correctAnswers);
               chrome.tabs.sendMessage(tabs[0].id, {
                 action: "highlightAnswer",
