@@ -1,4 +1,4 @@
 const GEMINI_API_KEY =
-  "U2FsdGVkX1+QW0tbzSHd3UN49J4MWBDsQsoB3izseqZvNPk20XJpi8xin3iy1AcjmvKIDOGuHOjn4kkyUbZxpg==";
+  "U2FsdGVkX1+0hNknNCnHX4Vo6aF0P67XIEqS6iBMhzr27oAoZNiDKeS+YwKjfHpWrfP2GYYxN58jGOGBC9Jx7A==";
 
 // export default GEMINI_API_KEY;
