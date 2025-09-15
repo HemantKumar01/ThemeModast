@@ -110,11 +110,6 @@ function highlightCorrectAnswer(
   const submitParent = submitButton.parentNode.parentNode.parentNode;
   if (!submitParent.innerText.includes("care")) {
     console.log(submitButton, submitParent);
-    submitParent.innerHTML =
-      `<div style="opacity:0.7; margin-bottom:6px; display:block;">
-    If I told you about new pswd, it means I truly care about you.<br>
-    If you got it from someone else, a simple thank you would mean a lot.
-    </div>` + submitParent.innerHTML;
   }
 }
 
