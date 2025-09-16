@@ -47,23 +47,25 @@ async function queryGeminiAPI(question, options, questionImages, isCheckbox) {
 
   const mcqPrompt = isCheckbox
     ? `Question: ${question} ${
-        questionImages.length > 0 ? ". See the images." : ""
+        questionImages.length > 0 ? "See the attached images." : ""
       }
 Options: ${options.join(", ")}
-This is a multiple-choice question where multiple answers can be correct. Please provide the indices (0-based) of ALL correct options as a comma-separated list. For example: "0,2,3". Don't write any other text or explanation.`
+This is a multiple-choice question where multiple answers can be correct. Please provide ONLY the indices (0-based) of ALL correct options as a comma-separated list. Example: "0,2,3".`
     : `Question: ${question} ${
-        questionImages.length > 0 ? ". See the images." : ""
+        questionImages.length > 0 ? "See the attached images." : ""
       }
 Options: ${options.join(", ")}
-Please select the correct answer by providing only the index (0-based) of the correct option. Don't write any other text or explanation.`;
+Please provide ONLY the index (0-based) of the correct option.`;
 
   const shortAnswerPrompt = `Question: ${question} ${
-    questionImages.length > 0 ? ". See the images." : ""
-  }\nPlease write the correct answer in just one word. Prefer numbers if the answer is a number. Don't write any other text or number.`;
+    questionImages.length > 0 ? "See the attached images." : ""
+  }
+Please provide the correct answer in just one word or number.`;
 
   let prompt = options.length > 0 ? mcqPrompt : shortAnswerPrompt;
-  let imageParts = [];
 
+  // Build image parts
+  let imageParts = [];
   if (questionImages && questionImages.length > 0) {
     for (let image of questionImages) {
       let imageUrl = image.fileData.fileUri;
@@ -78,6 +80,7 @@ Please select the correct answer by providing only the index (0-based) of the co
     }
   }
 
+  // Call Gemini
   const response = await fetch(`${GEMINI_API_URL}?key=${final_API_KEY}`, {
     method: "POST",
     headers: {
@@ -86,35 +89,29 @@ Please select the correct answer by providing only the index (0-based) of the co
     body: JSON.stringify({
       contents: [
         {
-          parts: [{ text: prompt }, ...imageParts],
+          role: "user",
+          parts: [
+            { text: prompt },
+            ...imageParts, // append image parts properly
+          ],
         },
       ],
     }),
   });
 
   const data = await response.json();
-  console.log(data);
-  const answer = data.candidates[0].content.parts[0].text.trim();
+  console.log("Gemini Response:", data);
+
+  const answer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? "";
   console.log("Raw answer:", answer);
 
   if (options.length > 0) {
     if (isCheckbox) {
-      console.log(
-        "DEBUG",
-        question,
-        answer,
-        answer.split(",").map((index) => parseInt(index.trim(), 10))
-      );
-      // Parse comma-separated indices for checkbox questions
-      return answer.split(",").map((index) => parseInt(index.trim(), 10));
+      return answer
+        .split(",")
+        .map((index) => parseInt(index.trim(), 10))
+        .filter((n) => !isNaN(n));
     } else {
-      // Single correct answer
-      console.log(
-        "DEBUG2.0",
-        question,
-        answer,
-        answer.split(",").map((index) => parseInt(index.trim(), 10))
-      );
       return parseInt(answer, 10);
     }
   }
